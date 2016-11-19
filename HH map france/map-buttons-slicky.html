@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+  <title>World map of open MS and NMO trials</title>
+        
+  <script type="text/javascript" src="lib/d3/d3.min.js"></script>
+  <script type="text/javascript" src="lib/d3/d3.geo.min.js"></script>
+  <script type="text/javascript" src="lib/d3/d3.layout.min.js"></script>
+  <script type="text/javascript" src="lib/d3/d3.csv.min.js"></script>
+
+  <script type="text/javascript" src="lib/jquery.js"></script>
+  <script type="text/javascript" src="lib/underscore.js"></script>
+  <script type="text/javascript" src="lib/backbone.js"></script>
+  <script src="lib/jquery-ui-1.8.16.custom.min.js"></script>
+
+  <script type="text/javascript" src="js/parallel-coordinates-d3.js"></script>
+  <script type="text/javascript" src="js/filter.js"></script>
+  
+  <!-- SlickGrid -->
+  <link rel="stylesheet" href="lib/slickgrid/slick.grid.css" type="text/css" media="screen" charset="utf-8" />
+  <script src="lib/slickgrid/jquery.event.drag-2.0.min.js"></script>
+  <script src="lib/slickgrid/slick.core.js"></script>
+  <script src="lib/slickgrid/slick.grid.js"></script>
+  <script src="lib/slickgrid/slick.dataview.js"></script>
+  <script src="lib/slickgrid/slick.pager.js"></script>
+  <script src="js/grid.js"></script>
+  <script src="js/pie.js"></script>
+  <script src="js/options.js"></script>
+  
+  <!--<script src="data/colors.js"></script>-->
+  <script src="data/latlong.js"></script>
+
+  <script src="http://d3js.org/topojson.v1.min.js"></script>
+  <script src="http://d3js.org/queue.v1.min.js"></script>
+
+  <!--Accordion-->
+  <script src="http://code.jquery.com/jquery.min.js"></script>
+  <script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+ 
+  <link rel="stylesheet" href="./slick.pager.css" type="text/css"/>
+  <link rel="stylesheet" href="style.css" type="text/css" charset="utf-8" />
+
+</head>
+
+<body>
+<div id="container">
+  <div id="intro">
+    <h3>World map of open MS and NMO trials</h3>
+    <p>
+      Developed by <a href="http://khawai.com/" target="_blank">Khawai</a>.
+        <br><br>
+      This data visualization displays the 2600 locations of open studies in Multiple Sclerosis and Neuromyelitis Optica Syndrome Disorder around the world as of May 30th 2016.
+      <br>
+      "Open studies" refers to studies that are currently enrolling subjects or are not yet enrolling, as opposed to studies that are closed to enrollment or are only enrolling by invitation. This visualization includes only studies that are registered with <a href="https://clinicaltrials.gov/">clinicaltrials.gov</a>.
+      <br><br>
+      To explore the map, you can <b>zoom in or out</b> (scroll up or down within the map, or double click the map to zoom in) or move to different areas of the map (click, hold, and move the mouse).
+      <br>
+      Each circle represents an investigation site. <b>Mouse-over a circle</b> to display specific information on the study. You can also click on each circle to access the corresponding clinicaltrials.gov page.
+      <br>Beneath the map, there are checkboxes that you can use to <b>filter the studies</b> by disease, condition and intervention type. 
+      <br>The table displays detailed information on the selected studies and will automatically be updated after each filter is applied. You can grab and drag the columns' label to re-arrange them. A double-arrow will appear when you mouse-over the separation between the columns. You can use it to resize the width of each column.
+    </p>
+  </div> <!-- end #intro   -->
+  <div id="map"></div>
+   
+  <div id="filterButtons">
+    <div id="diseaseButtons">
+      Disease<br>
+      <input type="checkbox" id="disease1" onClick="click" checked><label for="diseaseMS" id="diseaseMSlabel">Multiple Sclerosis</label></br>
+      <input type="checkbox" id="disease2" onClick="click" checked><label for="diseaseNMOSD" id="diseaseNMOSDlabel">NMOSD</label></br>
+    </div>
+    <div id="conditionButtons">
+      Condition<br>
+      <input type="checkbox" id="condition1" onClick="click" checked><label for="conditionALL" id="conditionALLlabel">All</label></br>
+      <input type="checkbox" id="condition2" onClick="click" checked><label for="conditionCIS" id="conditionCISlabel">CIS</label></br>
+      <input type="checkbox" id="condition3" onClick="click" checked><label for="conditionNMOSD" id="conditionNMOSDlabel">NMOSD</label></br>
+      <input type="checkbox" id="condition4" onClick="click" checked><label for="conditionPMS" id="conditionPMSlabel">Progressive MS</label></br>
+      <input type="checkbox" id="condition5" onClick="click" checked><label for="conditionRRMS" id="conditionRRMSlabel">RRMS</label></br>
+    </div>
+    <div id="interventionButtons">
+      Intervention<br>
+      <input type="checkbox" id="intervention1" onClick="click" checked><label for="interventionBEHAVIORAL" id="interventionBEHAVIORALlabel">Behavioral</label></br>
+      <input type="checkbox" id="intervention2" onClick="click" checked><label for="interventionBIOLOGICAL" id="interventionBIOLOGICALlabel">Biological</label></br>
+      <input type="checkbox" id="intervention3" onClick="click" checked><label for="interventionDEVICE" id="interventionDEVICElabel">Device</label></br>
+      <input type="checkbox" id="intervention4" onClick="click" checked><label for="interventionDRUG" id="interventionDRUGlabel">Drug</label></br>
+      <input type="checkbox" id="intervention5" onClick="click" checked><label for="interventionOTHER" id="interventionOTHERlabel">Other</label></br>
+      <input type="checkbox" id="intervention6" onClick="click" checked><label for="interventionSTEMCELLS" id="interventionSTEMCELLSlabel">Stem Cells</label></br>
+    </div>
+  </div><!-- end #filterButtons   -->
+  <div id="pager"></div>
+  <div id="myGrid"></div>
+  
+  <div id="accordion" class="panel-group">
+    <div class="panel panel-primary">        
+      <div class="panel-heading">
+        <h4 class="panel-title">
+          <a data-toggle="collapse" data-parent="#accordion" href="#accordionOne">
+            Method
+          </a>
+        </h4>
+      </div>
+
+      <div id="accordionOne" class="panel-collapse collapse in">
+        <div class="panel-body">
+          Data obtained from: 
+            <ul>
+              <li><a href="https://clinicaltrials.gov/" target="_blank">clinicaltrials.gov</a></li>
+            </ul>
+            The data were collected through May 30th 2016.
+            <br>
+            <h4>Inclusion criteria:</h4>
+            <h5>Open studies</h5>            
+            <ul>
+              <li>"not yet recruiting"</li>
+              <li>“recruiting” </li>
+              <li>“expanded access: available”</li>
+            </ul>
+            The results were curated individually to select only the relevant studies for a final total of 398 studies in MS and 11 studies in NMOSD.                      
+        </div>
+      </div>
+    </div><!--     end panel-primary  -->
+    <div class="panel panel-data">
+      <div class="panel-heading">
+        <h4 class="panel-title">
+          <a data-toggle="collapse" data-parent="#accordion" href="#accordionFour">
+            Data source
+          </a>
+        </h4>
+      </div>
+      <div id="accordionFour" class="panel-collapse collapse">
+        <div class="panel-body">    
+          <p>
+            Data source: <a href="data/completeDatabaseJuly2016_clean.csv">click here to download the database (csv format)</a>  
+          </p>
+        </div>
+      </div>
+    </div>
+  </div><!--     end accordion  -->
+</div> <!-- end of #container -->
+
+<script type="text/javascript">
+  
+$(function() {
+ 
+  // Highlighter not used yet 
+  var dimensions = new Filter(),
+    highlighter = new Selector(),
+    axis = ["Disease", "disease1", "disease2", "Condition", "condition1", "condition2", "condition3", "condition4", "condition5", "Intervention", "intervention1", "intervention2", "intervention3", "intervention4", "intervention5", "intervention6"], 
+    xy = d3.geo.mercator().scale(960).translate([480,300]), // should be 940 for scale and 480 for translate
+    path = d3.geo.path().projection(xy);
+  
+  var svg = d3.select("#map").append("svg")
+    .attr("width", 960)
+    .attr("height", 600)
+    .attr("id", "superSVG")
+  ;
+
+  var countries = d3.select("#superSVG").append("svg:svg").append("svg:g").attr("id", "countries"),
+    points = d3.select("svg").append("svg:g")
+  ;
+ 
+  d3.json("data/world-countries.json", function(c) {
+      countries.selectAll("path")
+        .data(c.features)
+        .enter().append("svg:path")
+        .attr("d", path)
+        .append("svg:title")
+        .text(function(d) { return d.properties.name; })
+      ;
+    }
+  );
+
+
+var dataBaseFile = "data/completeDatabaseJuly2016_David.csv"; 
+var csvdata = new Array(); 
+
+d3.csv(dataBaseFile, function(data) {
+
+    data.forEach(function(d, i) {
+      
+      d["disease1"] = "";
+      d["disease2"] = "";
+      d["condition1"] = "";
+      d["condition2"] = "";
+      d["condition3"] = "";
+      d["condition4"] = "";
+      d["condition5"] = "";
+      d["intervention1"] = "";
+      d["intervention2"] = "";
+      d["intervention3"] = "";
+      d["intervention4"] = "";
+      d["intervention5"] = "";
+      d["intervention6"] = "";
+      // done making more dimensions
+      d["drawingName"] = "";
+      d["drawingLat"] = 0;
+      d["drawingLong"] = 0;
+      csvdata.push(d);
+    });
+
+    for (i=0; i<csvdata.length; i++) {
+      if (csvdata[i].IdProche == csvdata[i].Id || csvdata[i].IdProche == 0) { // case bigCity or unknownPop or noProcheBigCity
+        csvdata[i].drawingName = csvdata[i].City.charAt(0).toUpperCase() + csvdata[i].City.substr(1).toLowerCase();
+        csvdata[i].drawingLat = csvdata[i].Latitude;
+        csvdata[i].drawingLong = csvdata[i].Longitude;
+      }
+      else { // case there is a procheBigCity
+        for (j=0; j<csvdata.length; j++) {
+          if (csvdata[j].Id == csvdata[i].IdProche) {
+            csvdata[i].drawingName = csvdata[j].City.charAt(0).toUpperCase() + csvdata[i].City.substr(1).toLowerCase();
+            csvdata[i].drawingLat = csvdata[j].Latitude;
+            csvdata[i].drawingLong = csvdata[j].Longitude;
+            //csvdata[i].drawingLat = csvdata[i].lat;
+            //csvdata[i].drawingLong = csvdata[i].long;
+          }
+        }
+      }
+      switch (csvdata[i].Disease) { 
+        case "Multiple Sclerosis":
+          csvdata[i].disease1 = "Multiple Sclerosis";
+          break;
+        case "NMOSD":
+          csvdata[i].disease2 = "NMOSD";
+          break;
+      }
+      switch (csvdata[i].Condition) { 
+        case "All":
+          csvdata[i].condition1 = "All";
+          break;
+        case "CIS":
+          csvdata[i].condition2 = "CIS";
+          break;
+        case "NMOSD":
+          csvdata[i].condition3 = "NMOSD";
+          break;
+        case "Progressive Multiple Sclerosis":
+          csvdata[i].condition4 = "Progressive Multiple Sclerosis";
+          break;
+        case "RRMS":
+          csvdata[i].condition5 = "RRMS";
+          break;
+      }
+      switch (csvdata[i].Intervention) { 
+        case "Behavioral":
+          csvdata[i].intervention1 = "Behavioral";
+          break;
+        case "Biological":
+          csvdata[i].intervention2 = "Biological";
+          break;
+        case "Device":
+          csvdata[i].intervention3 = "Device";
+          break;
+        case "Drug":
+          csvdata[i].intervention4 = "Drug";
+          break;
+        case "Other":
+          csvdata[i].intervention5 = "Other";
+          break;
+          case "Stem Cells":
+          csvdata[i].intervention6 = "Stem Cells";
+          break;
+      }
+    }
+
+    d3.select("#disease1").on("click", function (d, i) { NewClick(csvdata, buttonIdsArray[0]); });
+    d3.select("#disease2").on("click", function (d, i) { NewClick(csvdata, buttonIdsArray[1]); });
+
+    d3.select("#condition1").on("click", function (d, i) { NewClick(csvdata, buttonIdsArray[2]); });
+    d3.select("#condition2").on("click", function (d, i) { NewClick(csvdata, buttonIdsArray[3]); });
+    d3.select("#condition3").on("click", function (d, i) { NewClick(csvdata, buttonIdsArray[4]); });
+    d3.select("#condition4").on("click", function (d, i) { NewClick(csvdata, buttonIdsArray[5]); });
+    d3.select("#condition5").on("click", function (d, i) { NewClick(csvdata, buttonIdsArray[6]); });
+
+    d3.select("#intervention1").on("click", function (d, i) { NewClick(csvdata, buttonIdsArray[7]); });
+    d3.select("#intervention2").on("click", function (d, i) { NewClick(csvdata, buttonIdsArray[8]); });
+    d3.select("#intervention3").on("click", function (d, i) { NewClick(csvdata, buttonIdsArray[9]); });
+    d3.select("#intervention4").on("click", function (d, i) { NewClick(csvdata, buttonIdsArray[10]); });
+    d3.select("#intervention5").on("click", function (d, i) { NewClick(csvdata, buttonIdsArray[11]); });
+    d3.select("#intervention6").on("click", function (d, i) { NewClick(csvdata, buttonIdsArray[12]); });
+
+    drawPC(csvdata);
+    drawMap(csvdata);
+  });
+
+var buttonIdsArray = ["disease1", "disease2", "condition1", "condition2", "condition3", "condition4", "condition5", "intervention1", "intervention2", "intervention3", "intervention4", "intervention5", "intervention6"]; 
+
+var buttonCheckedArray = ["yes", "yes", "yes", "yes", "yes", "yes", "yes", "yes", "yes", "yes", "yes", "yes"]; 
+
+function NewClick (dataset, whichbutton) {
+  
+  var newdata = new Array(); // defines the new dataset
+
+/*  switch (buttonIdsArray.indexOf(whichbutton)) { // do stuff depending on which button was clicked
+    case 0:
+      if (document.getElementById(buttonIdsArray[0]).checked==true) { // Multiple Sclerosis is checked
+        document.getElementById(buttonIdsArray[1]).checked = false; // non NMOSD
+        document.getElementById(buttonIdsArray[4]).checked = false; // non NMOSD
+        document.getElementById(buttonIdsArray[2]).checked = true;
+        document.getElementById(buttonIdsArray[3]).checked = true;
+        document.getElementById(buttonIdsArray[5]).checked = true;
+        document.getElementById(buttonIdsArray[6]).checked = true;
+        document.getElementById(buttonIdsArray[7]).checked = true;
+        document.getElementById(buttonIdsArray[8]).checked = true;
+        document.getElementById(buttonIdsArray[9]).checked = true;
+        document.getElementById(buttonIdsArray[10]).checked = true;
+        document.getElementById(buttonIdsArray[11]).checked = true;
+        document.getElementById(buttonIdsArray[12]).checked = true;
+      }
+      break;
+    case 1:
+      if (document.getElementById(buttonIdsArray[1]).checked==true) { // NMOSD is checked
+        document.getElementById(buttonIdsArray[0]).checked = false; // non Multiple Sclerosis
+        document.getElementById(buttonIdsArray[2]).checked = false;
+        document.getElementById(buttonIdsArray[3]).checked = false;
+        document.getElementById(buttonIdsArray[5]).checked = false;
+        document.getElementById(buttonIdsArray[6]).checked = false;
+        document.getElementById(buttonIdsArray[7]).checked = false;
+        document.getElementById(buttonIdsArray[9]).checked = false;
+        document.getElementById(buttonIdsArray[8]).checked = true;
+        document.getElementById(buttonIdsArray[10]).checked = true;
+        document.getElementById(buttonIdsArray[11]).checked = true;
+        document.getElementById(buttonIdsArray[12]).checked = true;
+        document.getElementById(buttonIdsArray[4]).checked = true; // NMOSD
+      }
+      break;
+    case 2:
+      if (document.getElementById(buttonIdsArray[2]).checked==true) { // All is checked
+        document.getElementById(buttonIdsArray[7]).checked = true;
+        document.getElementById(buttonIdsArray[8]).checked = true;
+        document.getElementById(buttonIdsArray[9]).checked = true;
+        document.getElementById(buttonIdsArray[10]).checked = true;
+        document.getElementById(buttonIdsArray[11]).checked = true;
+        document.getElementById(buttonIdsArray[12]).checked = true;
+      }
+      break;
+    case 3:
+      if (document.getElementById(buttonIdsArray[3]).checked==true && document.getElementById(buttonIdsArray[2]).checked==false && document.getElementById(buttonIdsArray[4]).checked==false && document.getElementById(buttonIdsArray[5]).checked==false && document.getElementById(buttonIdsArray[6]).checked==false) { // CIS is checked alone
+        document.getElementById(buttonIdsArray[7]).checked = false;
+        document.getElementById(buttonIdsArray[8]).checked = false;
+        document.getElementById(buttonIdsArray[9]).checked = false;
+        document.getElementById(buttonIdsArray[10]).checked = true;
+        document.getElementById(buttonIdsArray[11]).checked = true;
+        document.getElementById(buttonIdsArray[12]).checked = true;
+      }
+      break;
+    case 4:
+      if (document.getElementById(buttonIdsArray[4]).checked==true && document.getElementById(buttonIdsArray[2]).checked==false && document.getElementById(buttonIdsArray[5]).checked==false && document.getElementById(buttonIdsArray[6]).checked==false) { // NMOSD is checked alone, short CIS
+        document.getElementById(buttonIdsArray[7]).checked = false;
+        document.getElementById(buttonIdsArray[8]).checked = true;
+        document.getElementById(buttonIdsArray[9]).checked = false;
+        document.getElementById(buttonIdsArray[10]).checked = true;
+        document.getElementById(buttonIdsArray[11]).checked = true;
+        document.getElementById(buttonIdsArray[12]).checked = true;
+      }
+      break;
+    case 5:
+      if (document.getElementById(buttonIdsArray[5]).checked==true) { // Progressive Multiple Sclerosis is checked
+        document.getElementById(buttonIdsArray[7]).checked = true;
+        document.getElementById(buttonIdsArray[8]).checked = true;
+        document.getElementById(buttonIdsArray[9]).checked = true;
+        document.getElementById(buttonIdsArray[10]).checked = true;
+        document.getElementById(buttonIdsArray[11]).checked = true;
+        document.getElementById(buttonIdsArray[12]).checked = true;
+      }
+      break;
+    case 6:
+      if (document.getElementById(buttonIdsArray[6]).checked==true) { // RRMS is checked
+        document.getElementById(buttonIdsArray[7]).checked = true;
+        document.getElementById(buttonIdsArray[8]).checked = true;
+        document.getElementById(buttonIdsArray[9]).checked = true;
+        document.getElementById(buttonIdsArray[10]).checked = true;
+        document.getElementById(buttonIdsArray[11]).checked = true;
+        document.getElementById(buttonIdsArray[12]).checked = true;
+      }
+      break;
+    case 7:
+    case 8:
+    case 9:
+    case 10:
+    case 11:
+    case 12:
+  }*/
+
+  for (buttonIndex=0; buttonIndex<buttonIdsArray.length; buttonIndex++) { // find out which buttons are checked
+    if (document.getElementById(buttonIdsArray[buttonIndex]).checked==true) { buttonCheckedArray[buttonIndex]="yes"; }
+    else { buttonCheckedArray[buttonIndex]="no"; }
+  }
+
+  var numberOfEntries = 0;
+
+  dataset.forEach(function(d, i) {
+    for (indexDisease=0; indexDisease<2; indexDisease++) { // Disease
+      if (d[buttonIdsArray[indexDisease]]!="" && buttonCheckedArray[indexDisease]=="yes") { // same Disease
+        for (indexCondition=2; indexCondition<7; indexCondition++) { // Condition
+          if (d[buttonIdsArray[indexCondition]]!="" && buttonCheckedArray[indexCondition]=="yes") { // same Condition
+            for (indexIntervention=7; indexIntervention<buttonCheckedArray.length; indexIntervention++) { // Intervention
+              if (d[buttonIdsArray[indexIntervention]]!="" && buttonCheckedArray[indexIntervention]=="yes") { // same Intervention
+                newdata.push(d);
+                  numberOfEntries++;
+              }
+            }
+          }
+        }
+      }
+    }
+  });
+//  console.log(newdata);
+  points.selectAll(".show").remove(); 
+  drawMap(newdata);
+  drawPC(newdata);
+}
+
+  function refreshMap(filtered) {
+    points.selectAll("circle")
+      .attr("class", function(d) { return showClass(d, filtered); })
+    ;
+  }
+
+  function showClass(d, filtered) {
+    return _.include(filtered, d) ? "show" : null;
+  }
+  
+  function drawMap(data) {
+    points.selectAll("circle")
+      .data(data).enter().append("svg:circle")
+      .attr("class", "show")
+      .attr("cx", function(d) {
+        return xy([d.drawingLong, d.drawingLat])[0];
+      })
+      .attr("cy", function(d) {
+        return xy([d.drawingLong, d.drawingLat])[1];
+      })
+      .attr("r", 3) // trying to make transition lighter, r=1 originally
+      .on("click", function(d) { window.open("https://clinicaltrials.gov/ct2/show/"+d.NCTNumber);})      
+      .append("svg:title")
+      .text(function(d) { return d.NCTNumber + ", " + d.drawingName + ", " + d.PrincipalInvestigationLocation});
+
+//      d3.selectAll("circle").transition().duration(2000).attr("r", 5).style("opacity", .1); // trying to make transition lighter
+
+      d3.selectAll("circle").transition().delay(500).duration(1000).attr("r", 1).style("opacity", 1); // trying to make transition lighter, delay=2000 and duration=2000 originally
+      
+  }
+
+  function drawPC(data) {
+    dimensions.set({data: data});
+    drawMap(dimensions);
+
+    var Scolumns = _(_(data[0]).keys()).without('Id', 'Country', 'City', 'Latitude', 'Longitude', 'Population', 'IdProche', /*'Title', 'Sponsor/Collaborators', 'Gender', 'Age Groups', 'URL', */'disease1', 'disease2', 'condition1', 'condition2', 'condition3', 'condition4', 'condition5', 'intervention1', 'intervention2', 'intervention3', 'intervention4', 'intervention5', 'intervention6', 'drawingName', 'drawingLat', 'drawingLong', 'id')
+    ;
+
+    var slicky = new grid({
+          model: dimensions,
+          selector: highlighter,
+          columns: Scolumns
+        }
+      )
+    ;
+
+    slicky.update();
+  }
+  
+  // zoom and pan
+  var zoom = d3.behavior.zoom()
+    .on("zoom",function() {
+        points.attr("transform","translate("+d3.event.translate.join(",")+")scale("+d3.event.scale+")");
+        countries.attr("transform","translate("+d3.event.translate.join(",")+")scale("+d3.event.scale+")");
+      }
+    )
+  ;
+
+  svg.call(zoom);
+
+  }
+);
+
+  </script>
+
+</body>
+</html>
