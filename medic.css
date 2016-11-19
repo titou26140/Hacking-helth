@@ -1,0 +1,43 @@
+body
+{
+  margin-top: 0px;
+  font-family: 'Roboto', sans-serif;
+  color: grey;
+  /*background-color: #F7F0E9;*/
+}
+
+.formulaire
+{
+  font-size: 30px;
+  font-style: italic;
+}
+
+.btn_header
+{
+  margin-left: 7px;
+}
+.general_title
+{
+  text-align: center;
+}
+
+.font-body
+{
+  background-image: url(http://www.cheminement.com/wp-content/uploads/2016/01/etre-ou-ne-pas-etre-en-relation-4-1038x576.jpg);
+}
+
+.title
+{
+  font-family: 'Pacifico', cursive;
+  font-size: 56px;
+  color: #E84A5F;
+  text-shadow: 2px 2px 2px black;
+}
+
+.legend
+{
+  font-style: italic;
+  margin-top: 0px;
+  font-size: 30px;
+  font-family: 'Indie Flower', cursive;
+}
