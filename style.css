@@ -1,15 +1,33 @@
 body
 {
+  margin-top: 0px;
+  font-family: 'Roboto', sans-serif;
   color: white;
   background-color: #2A363B;
 }
 
-p
+.general_title
 {
-  font-family: 'Roboto', sans-serif;
+  text-align: center;
 }
 
-h1
+.header
 {
-    color: #E84A5F;
+  background-color: #FF847B;
+}
+
+.title
+{
+  font-family: 'Pacifico', cursive;
+  font-size: 56px;
+  color: #E84A5F;
+  text-shadow: 2px 2px 2px black;
+}
+
+.legend
+{
+  font-style: italic;
+  margin-top: 0px;
+  font-size: 30px;
+  font-family: 'Indie Flower', cursive;
 }
